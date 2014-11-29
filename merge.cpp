@@ -58,13 +58,15 @@ void inplace_merge(size_t * a, size_t * b, size_t * c) {
 	}
 	DEBUG(std::endl);
 
-	// Insertion sort of buckets
+	// Selection sort of buckets
 	for (size_t * i = a + 2 * bucketSize; i != c; i += bucketSize) {
-		size_t * insertionPoint = a + 2 * bucketSize;
-		while (*insertionPoint < *i) insertionPoint += bucketSize;
-		DEBUG("Insert " << (i - (a + 2 * bucketSize)) << " at "
-			<< (insertionPoint - (a + 2 * bucketSize)) << '\n');
-		std::rotate(insertionPoint, i, i + bucketSize);
+		size_t * smallest = i;
+		for (size_t * j = i; j != c; j += bucketSize) {
+			if (*j < *smallest) smallest = j;
+		}
+		DEBUG("Insert " << (smallest - (a + 2 * bucketSize)) << " at "
+			<< (i - (a + 2 * bucketSize)) << '\n');
+		std::swap_ranges(i, i + bucketSize, smallest);
 	}
 
 	for (size_t * i = a; i != c; ++i) {
@@ -140,16 +142,16 @@ void test_all(size_t sqrtN, size_t trials) {
 	for (size_t i = 0; i < trials; ++i) {
 		test(numbers, N, "huang", inplace_merge);
 		test(numbers, N, "std", std::inplace_merge<size_t *>);
-		test(numbers, N, "sort",
-			[](size_t * a, size_t *, size_t * c) {
-				std::sort(a, c);
-			});
+		// test(numbers, N, "sort",
+		// 	[](size_t * a, size_t *, size_t * c) {
+		// 		std::sort(a, c);
+		// 	});
 	}
 }
 
 int main() {
 	// std::vector<size_t> numbers(50);
 	// test(numbers, 25, "huang", inplace_merge);
-	test_all(1000, 5);
+	test_all(2000, 5);
 	return 0;
 }

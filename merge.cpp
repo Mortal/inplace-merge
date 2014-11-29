@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <sys/time.h>
 #include <stdexcept>
+#include <random>
 
 //#define DEBUG(x) do { std::cout << x; } while (0)
 #define DEBUG(x) do {} while (0)
@@ -111,46 +112,36 @@ void inplace_merge(size_t * a, size_t * b, size_t * c) {
 	DEBUG(std::endl);
 }
 
-void test(size_t sqrtN, size_t trials) {
-	size_t bucketSize = sqrtN;
-	size_t buckets = bucketSize;
-	size_t N = bucketSize * buckets;
-	std::vector<size_t> numbers(2 * N);
-	for (size_t i = 0; i < trials; ++i) {
-		for (size_t i = 0; i < N; ++i) numbers[i] = 2*i;
-		for (size_t i = 0; i < N; ++i) numbers[N + i] = 2*i + 1;
-		{
-			timer t;
-			inplace_merge(&numbers[0], &numbers[N], &numbers[0] + 2*N);
-			std::cout << N << "\thuang\t" << t.elapsed() << std::endl;
-		}
-		for (size_t i = 0; i < 2*N; ++i) {
-			if (numbers[i] != i) {
-				std::cout << "failed " << i << std::endl;
-			}
-		}
+template <typename F>
+void test(std::vector<size_t> & numbers, size_t N, const char * kind, F && f) {
+	std::mt19937 rng;
+	for (size_t i = 0; i < 2 * N; ++i) numbers[i] = rng();
+	std::sort(&numbers[0], &numbers[0] + N);
+	std::sort(&numbers[0] + N, &numbers[0] + 2 * N);
+	{
+		timer t;
+		f(&numbers[0], &numbers[N], &numbers[0] + 2*N);
+		std::cout << N << "\t" << kind << "\t" << t.elapsed() << std::endl;
 	}
-	for (size_t i = 0; i < trials; ++i) {
-		for (size_t i = 0; i < N; ++i) numbers[i] = 2*i;
-		for (size_t i = 0; i < N; ++i) numbers[N + i] = 2*i + 1;
-		{
-			timer t;
-			std::inplace_merge(&numbers[0], &numbers[N], &numbers[0] + 2*N);
-			std::cout << N << "\tstd\t" << t.elapsed() << std::endl;
-		}
-		for (size_t i = 0; i < 2*N; ++i) {
-			if (numbers[i] != i) {
-				std::cout << "failed " << i << std::endl;
-			}
+	for (size_t i = 1; i < 2*N; ++i) {
+		if (numbers[i] < numbers[i - 1]) {
+			std::cout << "failed " << i << std::endl;
 		}
 	}
 }
 
-int main() {
-	double i = 1000;
-	while (i < 10000) {
-		test((size_t) i, 5);
-		i *= 1.05;
+void test_both(size_t sqrtN, size_t trials) {
+	size_t N = sqrtN * sqrtN;
+	std::vector<size_t> numbers(2 * N);
+	for (size_t i = 0; i < trials; ++i) {
+		test(numbers, N, "huang", inplace_merge);
+		test(numbers, N, "std", std::inplace_merge<size_t *>);
 	}
+}
+
+int main() {
+	// std::vector<size_t> numbers(50);
+	// test(numbers, 25, "huang", inplace_merge);
+	test_both(1000, 5);
 	return 0;
 }

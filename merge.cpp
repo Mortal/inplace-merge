@@ -134,18 +134,22 @@ void test(std::vector<size_t> & numbers, size_t N, const char * kind, F && f) {
 	}
 }
 
-void test_both(size_t sqrtN, size_t trials) {
+void test_all(size_t sqrtN, size_t trials) {
 	size_t N = sqrtN * sqrtN;
 	std::vector<size_t> numbers(2 * N);
 	for (size_t i = 0; i < trials; ++i) {
 		test(numbers, N, "huang", inplace_merge);
 		test(numbers, N, "std", std::inplace_merge<size_t *>);
+		test(numbers, N, "sort",
+			[](size_t * a, size_t *, size_t * c) {
+				std::sort(a, c);
+			});
 	}
 }
 
 int main() {
 	// std::vector<size_t> numbers(50);
 	// test(numbers, 25, "huang", inplace_merge);
-	test_both(1000, 5);
+	test_all(1000, 5);
 	return 0;
 }

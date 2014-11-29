@@ -24,13 +24,14 @@ struct timer {
 size_t * merge(size_t * a, size_t * b, size_t * c, size_t * out) {
 	size_t * i = a;
 	size_t * j = b;
-	while (i != b) {
-		if (j == c || *i < *j) {
+	while (i != b && j != c) {
+		if (*i < *j) {
 			std::iter_swap(i++, out++);
 		} else {
 			std::iter_swap(j++, out++);
 		}
 	}
+	if (i != b) std::swap_ranges(i, b, c - (b - i));
 	return out;
 }
 

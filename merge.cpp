@@ -16,7 +16,8 @@ struct timer {
 	double elapsed() {
 		struct timeval t2;
 		::gettimeofday(&t2, NULL);
-		return (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 1e-6;
+		return (t2.tv_sec - t1.tv_sec) +
+			(t2.tv_usec - t1.tv_usec) * 1e-6;
 	}
 
 	struct timeval t1;
@@ -78,7 +79,8 @@ void inplace_merge(size_t * a, size_t * b, size_t * c) {
 	size_t * series1 = a + 2 * bucketSize;
 	size_t * series2 = series1 + bucketSize;
 	while (true) {
-		while (series2 != c && series2[-1] <= series2[0]) series2 += bucketSize;
+		while (series2 != c && series2[-1] <= series2[0])
+			series2 += bucketSize;
 		if (series2 == c) break;
 		for (size_t * i = a; i != c; ++i) {
 			if (i == out) DEBUG("| ");
@@ -102,7 +104,8 @@ void inplace_merge(size_t * a, size_t * b, size_t * c) {
 	// Insertion sort of remainder
 	for (size_t * i = out; i != c; ++i) {
 		size_t * insertionPoint = out;
-		while (insertionPoint != i && *insertionPoint < *i) ++insertionPoint;
+		while (insertionPoint != i && *insertionPoint < *i)
+			++insertionPoint;
 		DEBUG("Insert " << (i - out) << " at "
 			<< (insertionPoint - out) << '\n');
 		std::rotate(insertionPoint, i, i + 1);
@@ -121,7 +124,8 @@ void test(std::vector<size_t> & numbers, size_t N, const char * kind, F && f) {
 	{
 		timer t;
 		f(&numbers[0], &numbers[N], &numbers[0] + 2*N);
-		std::cout << N << "\t" << kind << "\t" << t.elapsed() << std::endl;
+		std::cout << N << "\t" << kind << "\t"
+			<< t.elapsed() << std::endl;
 	}
 	for (size_t i = 1; i < 2*N; ++i) {
 		if (numbers[i] < numbers[i - 1]) {
